@@ -1,8 +1,8 @@
 // the setup function runs once when you press reset or power the board
 
-int ledPin = D8; //initialize LED connected to digital pin D5
-int led1 = D6;
-int led2 = D0;
+int ledPin = D4; //initialize LED connected to digital pin D4 -- Red
+int led1 = D3; //Yellow
+int led2 = D2; //Green
 
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
