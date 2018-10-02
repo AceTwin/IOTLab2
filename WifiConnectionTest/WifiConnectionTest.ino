@@ -1,9 +1,33 @@
 // the setup function runs once when you press reset or power the board
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+
+//Setup WiFi stuff
+const char* ssid = ""; //Enter Wifi ssid inbetween quotes
+const char* password = ""; //Enter Wifi password inbetween quotes
+
 int ledPin = D4; //initialize LED connected to digital pin D4 -- Red
 int led1 = D3; //Yellow
 int led2 = D2; //Green
 
 void setup() {
+  //Wifi stuff
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+ 
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+  
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(ledPin, OUTPUT); //set digital pin as output
   pinMode(led1, OUTPUT);
@@ -24,3 +48,4 @@ void loop() {
 }
 
 //Reference: https://www.arduino.cc/en/Tutorial-0007/BlinkingLED
+//Wifi Reference: http://cyaninfinite.com/tutorials/getting-started-with-the-wemos-d1-esp8266-wifi-board/#Running-a-Simple-Web-Server
