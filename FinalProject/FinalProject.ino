@@ -11,7 +11,8 @@ IPAddress server(192, 168, 1, 21); //IP of webserver
 const char* ssid = ""; //Enter Wifi ssid inbetween quotes
 const char* password = ""; //Enter Wifi password inbetween quotes
 
-int red = D5; //initialize LED connected to digital pin D4 -- Red
+//Initialize light connections
+int red = D5; //Red
 int yellow = D3; //Yellow
 int green = D2; //Green
 
@@ -22,16 +23,20 @@ void setup() {
   Serial.println("");
  
   // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) 
+  {
     delay(500); //5 second wait
     Serial.print(".");
   }
+
+  //Show connection details
   Serial.println("");
   Serial.print("Connected to ");
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-    // initialize digital pins as output
+  
+  // initialize digital pins as output
   pinMode(red, OUTPUT);
   pinMode(yellow, OUTPUT);
   pinMode(green, OUTPUT);
@@ -44,59 +49,38 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  delay(500);
+  if(WiFi.status() == WL_CONNECTED){
+    HTTPClient http;
+    http.begin("http://192.168.1.21:5000/state");
+    int httpCode= http.GET();
 
-  Serial.print("connecting to host");
-  //Serial.println(host);
-  
-  // Use WiFiClient class to create TCP connections
-  WiFiClient client;
-  const int httpPort = 5000;
-  if (!client.connect(server, httpPort)) {
-    Serial.println("connection failed");
-    return;
-  }
-  
-  // We now create a URI for the request
-  String url = "/state";
-  
-  Serial.print("Requesting URL: ");
-  Serial.println(url);
-//  while(1==1){
-  // This will send the request to the server
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-               "Host: 192.168.1.21" + "\r\n\r\n"+
-               //"Host: " + host + "\r\n" +  
-               "Connection: close\r\n\r\n");
-  int timeout = millis() + 2000;
-  while (client.available() == 0) {
-    Serial.print(".");
-    if (timeout - millis() < 0) {
-      Serial.println(">>> Client Timeout !");
-      client.stop();
-      return;
+    //Get content off of website
+    String payload;
+    if (httpCode > 0) {
+      payload = http.getString();
+      Serial.println(payload);
     }
-  }
+
+    http.end(); //Close connection
+
+  
   int len;
   String led;
-  
+ 
   // Read all the lines of the reply from server and print them to Serial
-  while(client.available()){ //while there is a connection
-    String line = client.readStringUntil('\r');
-    Serial.print(line);
-    len = line.length(); //Getting the length of the line
-    led = &line[len - 1]; //Read the position, find the state
-  }
+    
+    len = payload.length(); //Getting the length of the line
+    led = &payload[len - 1]; //Read the position, find the state
+
   Serial.println();
   Serial.println("This is the led:" + led);
   dostuff(led); //Call the light function
-//  if (led == "1")
-//  {
-//    Serial.println("Red");
-//  } else {Serial.println("Not Red");}
+
   Serial.println("<-- Headers complete -->");
   Serial.println();
   Serial.println("closing connection");
+  }
+   delay (100);
 }
 
 void dostuff(String state){
@@ -127,23 +111,22 @@ void dostuff(String state){
   digitalWrite(green, LOW);
   }
 
-  if (state =="4")
+  if (state =="4") //Traffic Light Cycle
   {
-    //loop traffic lights
-//    while(state=="4")
-//   {
+      //Red
       digitalWrite(red, HIGH);     // red on
       delay(1000);                //wait
       digitalWrite(red, LOW);     //red off  
-      
+
+      //Yellow
       digitalWrite(yellow, HIGH); //yellow on
       delay(1000);     
       digitalWrite(yellow, LOW);  //yellow off
-  
+
+      //Green
       digitalWrite(green,HIGH);   //green on
       delay(1000);  
       digitalWrite(green, LOW);
-//    }
   }
 
   Serial.print("Works");
